@@ -4,54 +4,106 @@
     <title>SkyCrashHub</title>
     <style>
         body {
-            background-color: #0f172a;
-            color: white;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
             font-family: Arial, sans-serif;
-            text-align: center;
         }
+
+        /* Moving sky background */
+        .sky {
+            position: fixed;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(to top, #0f172a, #1e3a8a);
+            animation: moveSky 20s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes moveSky {
+            0% { background-position: 0 0; }
+            100% { background-position: -100% 0; }
+        }
+
         h1 {
             color: #00ffcc;
-        }
-        button {
-            background-color: red;
-            padding: 10px 20px;
-            border: none;
-            color: white;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        #multiplier {
-            font-size: 32px;
+            text-align: center;
             margin-top: 20px;
+        }
+
+        #multiplier {
+            font-size: 36px;
             color: #00ffcc;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        #plane {
+            position: absolute;
+            top: 200px;
+            left: 50%;
+            width: 60px;
+            transition: top 0.2s;
+        }
+
+        #restartButton {
+            display: none;
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: red;
+            color: white;
+            border: none;
         }
     </style>
 </head>
 <body>
-    <h1>Welcome to SkyCrashHub</h1>
-    <p>Your #1 Crash Game Fan Website</p>
-    <button onclick="startMultiplier()">Start Multiplier Simulation</button>
-    <h2>Current Multiplier: <span id="multiplier">1.00x</span></h2>
+    <div class="sky"></div>
+
+    <h1>SkyCrashHub</h1>
+    <div id="multiplier">1.02x</div>
+    <img id="plane" src="https://i.postimg.cc/Zn5fG8P3/plane.png">
+    <button id="restartButton" onclick="startMultiplier()">Restart Round</button>
 
     <script>
-        let multiplier = 1.0;
+        const multiplierValues = [1.00,1.02,3.00,3.05,3.55,5.00,6.05,10.00,15.00];
+        const maxMultiplier = 30;
+        let multiplier = 1.02;
         let interval;
 
         function startMultiplier() {
             clearInterval(interval);
-            multiplier = 1.0;
+            multiplier = 1.02;
             document.getElementById('multiplier').innerText = multiplier.toFixed(2) + 'x';
+            const plane = document.getElementById('plane');
+            plane.style.top = '200px';
+            plane.style.display = 'block'; // make sure plane is visible
+            document.getElementById('restartButton').style.display = 'none';
 
             interval = setInterval(() => {
-                multiplier += Math.random() * 0.1; 
+                let randomValue = multiplierValues[Math.floor(Math.random() * multiplierValues.length)];
+                multiplier += randomValue;
+
+                if(multiplier > maxMultiplier) multiplier = maxMultiplier;
                 document.getElementById('multiplier').innerText = multiplier.toFixed(2) + 'x';
 
-                if (multiplier > 10) {
+                // Plane moves up
+                let newTop = 200 - (multiplier - 1) * 6;
+                plane.style.top = newTop + 'px';
+
+                // Crash effect
+                if(multiplier >= maxMultiplier) {
                     clearInterval(interval);
-                    alert("Round ended! Max multiplier reached.");
+                    plane.style.display = 'none'; // plane disappears
+                    alert("CRASH! Maximum multiplier reached!");
+                    document.getElementById('restartButton').style.display = 'inline-block';
                 }
-            }, 200);
+            }, 800);
         }
+
+        // Start automatically on page load
+        window.onload = startMultiplier;
     </script>
 </body>
 </html>
