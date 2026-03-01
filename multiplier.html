@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SkyCrashHub</title>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            overflow: hidden; /* keeps plane inside screen */
+        }
+        h1 {
+            color: #00ffcc;
+        }
+        button {
+            background-color: red;
+            padding: 10px 20px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        #multiplier {
+            font-size: 32px;
+            margin-top: 20px;
+            color: #00ffcc;
+        }
+        #plane {
+            position: relative;
+            top: 200px;
+            width: 50px;
+            transition: top 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to SkyCrashHub</h1>
+    <p>Your #1 Crash Game Fan Website</p>
+    <button onclick="startMultiplier()">Start Multiplier Simulation</button>
+    <h2>Current Multiplier: <span id="multiplier">1.00x</span></h2>
+    <img id="plane" src="https://i.postimg.cc/Zn5fG8P3/plane.png">
+
+    <script>
+        let multiplier = 1.0;
+        let interval;
+
+        function startMultiplier() {
+            clearInterval(interval);
+            multiplier = 1.0;
+            document.getElementById('multiplier').innerText = multiplier.toFixed(2) + 'x';
+            document.getElementById('plane').style.top = '200px'; // reset plane
+
+            interval = setInterval(() => {
+                multiplier += Math.random() * 0.1;
+                document.getElementById('multiplier').innerText = multiplier.toFixed(2) + 'x';
+
+                // Move plane up as multiplier increases
+                let newTop = 200 - multiplier * 15; // adjust speed
+                document.getElementById('plane').style.top = newTop + 'px';
+
+                if (multiplier > 10) {
+                    clearInterval(interval);
+                    alert("Round ended! Max multiplier reached.");
+                }
+            }, 200);
+        }
+    </script>
+</body>
+</html>
