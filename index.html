@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SkyCrashHub</title>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        h1 {
+            color: #00ffcc;
+        }
+        button {
+            background-color: red;
+            padding: 10px 20px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #multiplier {
+            font-size: 32px;
+            margin-top: 20px;
+            color: #00ffcc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to SkyCrashHub</h1>
+    <p>Your #1 Crash Game Fan Website</p>
+    <button onclick="startMultiplier()">Start Multiplier Simulation</button>
+    <h2>Current Multiplier: <span id="multiplier">1.00x</span></h2>
+
+    <script>
+        let multiplier = 1.0;
+        let interval;
+
+        function startMultiplier() {
+            clearInterval(interval);
+            multiplier = 1.0;
+            document.getElementById('multiplier').innerText = multiplier.toFixed(2) + 'x';
+
+            interval = setInterval(() => {
+                multiplier += Math.random() * 0.1; 
+                document.getElementById('multiplier').innerText = multiplier.toFixed(2) + 'x';
+
+                if (multiplier > 10) {
+                    clearInterval(interval);
+                    alert("Round ended! Max multiplier reached.");
+                }
+            }, 200);
+        }
+    </script>
+</body>
+</html>
