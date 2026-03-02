@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SkyCrashPlay - Multiplier with Players</title>
+<title>SkyCrashPlay - Players with Multiplier</title>
 <style>
 body{margin:0;padding:20px;font-family:Arial;background:black;color:white;display:flex;flex-direction:column;}
 header{text-align:center;font-size:36px;color:#ff4d4d;margin-bottom:20px;}
@@ -27,18 +27,22 @@ header{text-align:center;font-size:36px;color:#ff4d4d;margin-bottom:20px;}
 <div class="players" id="players"></div>
 
 <script>
+// -----------------------
 // Players
-let playersList=["John","Jane","Odhiambo","Kelvin","Janet","Wairimu","Joyce","Faith","Njeri","Kanja","Douglas"];
+const playersList=["John","Jane","Odhiambo","Kelvin","Janet","Wairimu","Joyce","Faith","Njeri","Kanja","Douglas"];
 let simulatedPlayers=[];
 
+// -----------------------
 // History
 let historyList=[];
 
+// -----------------------
 // Multiplier
 let multiplier=0;
 let crashPoint=0;
-let interval;
+let interval=null;
 
+// -----------------------
 // Generate players with random cash out
 function generatePlayers(){
     simulatedPlayers=[];
@@ -52,9 +56,10 @@ function generatePlayers(){
     document.getElementById("players").innerHTML=html;
 }
 
+// -----------------------
 // Update history
 function updateHistory(){
-    let container=document.getElementById("history");
+    const container=document.getElementById("history");
     container.innerHTML="";
     for(let i=0;i<historyList.length;i++){
         let div=document.createElement("div");
@@ -63,6 +68,7 @@ function updateHistory(){
     }
 }
 
+// -----------------------
 // Start a new round
 function startRound(){
     multiplier=0;
@@ -70,13 +76,43 @@ function startRound(){
     document.getElementById("status").innerText="Flying...";
     generatePlayers();
 
-    interval=setInterval(()=>{
+    if(interval) clearInterval(interval);
+
+    interval=setInterval(function(){
         multiplier+=0.1;
         multiplier=parseFloat(multiplier.toFixed(2));
-        document.getElementById("multiplier").innerText=multiplier+"x";
+        document.getElementById("multiplier").innerText=multiplier.toFixed(2)+"x";
 
         // Players automatic cash out
         simulatedPlayers.forEach((p,i)=>{
             if(!p.cashed && multiplier>=p.cashOut && multiplier<crashPoint){
                 p.cashed=true;
-                document.getElementById("player"+i).innerText=`${p.name} - Bet Sh.${p.bet} - Cashed Out ${p.cashOut}x = Sh.${(p.bet*p.cashOut
+                document.getElementById("player"+i).innerText=${p.name} - Bet Sh.${p.bet} - Cashed Out ${p.cashOut}x = Sh.${(p.bet*p.cashOut).toFixed(2)};
+            }
+            if(!p.cashed && multiplier>=crashPoint){
+                p.cashed=true;
+                document.getElementById("player"+i).innerText=${p.name} - Bet Sh.${p.bet} - Crashed at ${crashPoint}x, Lost Sh.${p.bet};
+            }
+        });
+
+        // End round
+        if(multiplier>=crashPoint){
+            clearInterval(interval);
+            historyList.unshift(crashPoint.toFixed(2));
+            if(historyList.length>10) historyList.pop();
+            updateHistory();
+            setTimeout(startRound,2000); // start new round after 2 seconds
+        }
+
+    },80);
+}
+
+// -----------------------
+// Start game after page load
+window.onload = function(){
+    startRound();
+};
+</script>
+
+</body>
+</html>
