@@ -10,7 +10,6 @@ body{
     font-family:Arial, sans-serif;
     background:#0b0f1a;
     color:white;
-    overflow:hidden;
 }
 
 /* Top history bar */
@@ -31,7 +30,7 @@ body{
 
 /* Game area */
 .game-area{
-    height:50vh;
+    height:55vh;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -41,11 +40,151 @@ body{
 }
 
 #multiplier{
-    font-size:48px;
+    font-size:50px;
     font-weight:bold;
     color:#00ffcc;
 }
 
-.connecting{
+#status{
     position:absolute;
-    font-size
+    top:20px;
+    font-size:16px;
+    opacity:0.7;
+}
+
+/* Betting panel */
+.bet-panel{
+    background:#111827;
+    padding:15px;
+}
+
+.bet-controls{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
+}
+
+.bet-controls button{
+    padding:10px 15px;
+    font-size:18px;
+}
+
+input{
+    width:80px;
+    text-align:center;
+    font-size:18px;
+}
+
+.cashout{
+    background:#1f2937;
+    padding:10px;
+    margin-top:10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+button{
+    border:none;
+    border-radius:6px;
+    background:#2563eb;
+    color:white;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="history" id="history"></div>
+
+<div class="game-area">
+    <div id="status">Connecting to game...</div>
+    <div id="multiplier">0.00x</div>
+</div>
+
+<div class="bet-panel">
+    <div class="bet-controls">
+        <button onclick="changeBet(-10)">-</button>
+        <input type="number" id="betAmount" value="10">
+        <button onclick="changeBet(10)">+</button>
+        <button onclick="placeBet()">BET</button>
+    </div>
+
+    <div class="cashout">
+        Auto Cash Out
+        <input type="number" id="autoCash" value="2.00" step="0.1">
+    </div>
+</div>
+
+<script>
+let multiplier = 0;
+let crashPoint = 0;
+let interval = null;
+let historyList = [];
+let isBetPlaced = false;
+
+function changeBet(amount){
+    let input = document.getElementById("betAmount");
+    input.value = Math.max(10, parseInt(input.value) + amount);
+}
+
+function placeBet(){
+    isBetPlaced = true;
+    alert("Bet placed!");
+}
+
+function startRound(){
+
+    document.getElementById("status").innerText = "Flying...";
+    multiplier = 0;
+    crashPoint = parseFloat((Math.random() * 8 + 1.5).toFixed(2));
+
+    interval = setInterval(function(){
+
+        multiplier += 0.05;
+        multiplier = parseFloat(multiplier.toFixed(2));
+        document.getElementById("multiplier").innerText = multiplier + "x";
+
+        let auto = parseFloat(document.getElementById("autoCash").value);
+
+        if(isBetPlaced && multiplier >= auto){
+            alert("Auto Cashed Out at " + multiplier + "x");
+            isBetPlaced = false;
+        }
+
+        if(multiplier >= crashPoint){
+            clearInterval(interval);
+            document.getElementById("status").innerText = "Crashed at " + crashPoint + "x";
+
+            historyList.unshift(crashPoint + "x");
+            if(historyList.length > 10) historyList.pop();
+
+            updateHistory();
+            isBetPlaced = false;
+
+            setTimeout(function(){
+                document.getElementById("status").innerText = "Connecting to game...";
+                setTimeout(startRound,1500);
+            },2000);
+        }
+
+    },100);
+}
+
+function updateHistory(){
+    let container = document.getElementById("history");
+    container.innerHTML = "";
+    for(let i=0; i<historyList.length; i++){
+        let div = document.createElement("div");
+        div.innerText = historyList[i];
+        container.appendChild(div);
+    }
+}
+
+setTimeout(startRound,2000);
+</script>
+
+</body>
+</html>
