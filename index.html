@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SkyCrashPlay - Players with Multiplier</title>
+<title>SkyCrashPlay - Multiplier with Players</title>
 <style>
 body{margin:0;padding:20px;font-family:Arial;background:black;color:white;display:flex;flex-direction:column;}
 header{text-align:center;font-size:36px;color:#ff4d4d;margin-bottom:20px;}
@@ -57,10 +57,15 @@ function generatePlayers(){
 }
 
 // -----------------------
-// Update history
-function updateHistory(){
+// Update history (top odds)
+function updateHistory(currentMultiplier){
     const container=document.getElementById("history");
     container.innerHTML="";
+    // show current multiplier first
+    let currentDiv=document.createElement("div");
+    currentDiv.innerText=currentMultiplier.toFixed(2)+"x";
+    container.appendChild(currentDiv);
+    // show previous crash multipliers
     for(let i=0;i<historyList.length;i++){
         let div=document.createElement("div");
         div.innerText=historyList[i]+"x";
@@ -83,6 +88,9 @@ function startRound(){
         multiplier=parseFloat(multiplier.toFixed(2));
         document.getElementById("multiplier").innerText=multiplier.toFixed(2)+"x";
 
+        // update history to show running multiplier
+        updateHistory(multiplier);
+
         // Players automatic cash out
         simulatedPlayers.forEach((p,i)=>{
             if(!p.cashed && multiplier>=p.cashOut && multiplier<crashPoint){
@@ -98,10 +106,11 @@ function startRound(){
         // End round
         if(multiplier>=crashPoint){
             clearInterval(interval);
+            // save crash multiplier to history
             historyList.unshift(crashPoint.toFixed(2));
             if(historyList.length>10) historyList.pop();
-            updateHistory();
-            setTimeout(startRound,2000); // start new round after 2 seconds
+            // start new round after 2 seconds
+            setTimeout(startRound,2000);
         }
 
     },80);
