@@ -27,22 +27,18 @@ header{text-align:center;font-size:36px;color:#ff4d4d;margin-bottom:20px;}
 <div class="players" id="players"></div>
 
 <script>
-// -----------------------
 // Players
 let playersList=["John","Jane","Odhiambo","Kelvin","Janet","Wairimu","Joyce","Faith","Njeri","Kanja","Douglas"];
 let simulatedPlayers=[];
 
-// -----------------------
 // History
 let historyList=[];
 
-// -----------------------
 // Multiplier
 let multiplier=0;
 let crashPoint=0;
 let interval;
 
-// -----------------------
 // Generate players with random cash out
 function generatePlayers(){
     simulatedPlayers=[];
@@ -56,7 +52,6 @@ function generatePlayers(){
     document.getElementById("players").innerHTML=html;
 }
 
-// -----------------------
 // Update history
 function updateHistory(){
     let container=document.getElementById("history");
@@ -68,7 +63,6 @@ function updateHistory(){
     }
 }
 
-// -----------------------
 // Start a new round
 function startRound(){
     multiplier=0;
@@ -76,37 +70,13 @@ function startRound(){
     document.getElementById("status").innerText="Flying...";
     generatePlayers();
 
-    interval=setInterval(function(){
+    interval=setInterval(()=>{
         multiplier+=0.1;
         multiplier=parseFloat(multiplier.toFixed(2));
         document.getElementById("multiplier").innerText=multiplier+"x";
 
-        // Update players cash out
+        // Players automatic cash out
         simulatedPlayers.forEach((p,i)=>{
             if(!p.cashed && multiplier>=p.cashOut && multiplier<crashPoint){
                 p.cashed=true;
-                document.getElementById("player"+i).innerText=${p.name} - Bet Sh.${p.bet} - Cashed Out ${p.cashOut}x = Sh.${(p.bet*p.cashOut).toFixed(2)};
-            }
-            if(!p.cashed && multiplier>=crashPoint){
-                p.cashed=true;
-                document.getElementById("player"+i).innerText=${p.name} - Bet Sh.${p.bet} - Crashed at ${crashPoint}x, Lost Sh.${p.bet};
-            }
-        });
-
-        // End round
-        if(multiplier>=crashPoint){
-            clearInterval(interval);
-            historyList.unshift(crashPoint.toFixed(2));
-            if(historyList.length>10) historyList.pop();
-            updateHistory();
-            setTimeout(startRound,2000); // start new round after 2 seconds
-        }
-    },80);
-}
-
-// -----------------------
-// Start game
-setTimeout(startRound,500);
-</script>
-</body>
-</html>
+                document.getElementById("player"+i).innerText=`${p.name} - Bet Sh.${p.bet} - Cashed Out ${p.cashOut}x = Sh.${(p.bet*p.cashOut
