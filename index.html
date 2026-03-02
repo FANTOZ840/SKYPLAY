@@ -1,50 +1,110 @@
-[3:36 am, 02/03/2026] FANTOZ🤫🌚: let activeBets = {
-    1: {placed:false, amount:100},
-    2: {placed:false, amount:50},
-    3: {placed:false, amount:20}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkyCrashPlay</title>
+<style>
+body{margin:0;font-family:Arial;color:white;background:radial-gradient(circle at center,#400000 0%,#000 70%),repeating-radial-gradient(circle,rgba(0,0,0,0.6)0,rgba(0,0,0,0.6)10px,transparent 10px,transparent 20px);}
+header{text-align:center;font-size:32px;font-weight:bold;color:#ff4d4d;padding:15px;}
+.game-area{height:40vh;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+#multiplier{font-size:55px;font-weight:bold;color:#ff4d4d;}
+#status{margin-bottom:10px;opacity:0.8;}
+.bet-panel{background:#1a0000;padding:15px;}
+.bet-box{margin-bottom:10px;}
+.bet-box input{width:60px;text-align:center;font-size:16px;margin-right:5px;}
+button{padding:6px 10px;border:none;border-radius:5px;background:#ff0000;color:white;cursor:pointer;margin-right:5px;}
+.player-result{color:#ff4d4d;margin-left:10px;}
+</style>
+</head>
+<body>
+<header>SkyCrashPlay</header>
+
+<div class="game-area">
+<div id="status">Connecting to game...</div>
+<div id="multiplier">0.00x</div>
+</div>
+
+<div class="bet-panel">
+<div class="bet-box">
+<input type="number" id="bet1" value="100">
+<button onclick="placeBet(1)">BET</button>
+<button onclick="cashOut(1)">CASH OUT</button>
+<span id="result1" class="player-result"></span>
+</div>
+<div class="bet-box">
+<input type="number" id="bet2" value="50">
+<button onclick="placeBet(2)">BET</button>
+<button onclick="cashOut(2)">CASH OUT</button>
+<span id="result2" class="player-result"></span>
+</div>
+<div class="bet-box">
+<input type="number" id="bet3" value="20">
+<button onclick="placeBet(3)">BET</button>
+<button onclick="cashOut(3)">CASH OUT</button>
+<span id="result3" class="player-result"></span>
+</div>
+</div>
+
+<script>
+// Multiplier setup
+let multiplier=0;
+let crashPoint=0;
+let interval;
+
+// Active bets
+let activeBets = {
+1:{placed:false, amount:100, cashed:false},
+2:{placed:false, amount:50, cashed:false},
+3:{placed:false, amount:20, cashed:false}
 };
 
-function changeBet(box, value){
-    let input = document.getElementById("bet"+box);
-    input.value = Math.max(10, parseInt(input.value) + value);
-}
-
+// Place a bet
 function placeBet(box){
-    let amount = parseInt(document.getElementById("bet"+box).value);
-    activeBets[box].placed = true;
-    activeBets[box].amount = amount;
-    document.getElementById("result"+box).innerText = " Bet placed: Sh."+amount;
+let amount=parseInt(document.getElementById("bet"+box).value);
+activeBets[box].placed=true;
+activeBets[box].amount=amount;
+activeBets[box].cashed=false;
+document.getElementById("result"+box).innerText="Bet placed: Sh."+amount;
 }
-[3:41 am, 02/03/2026] FANTOZ🤫🌚: <div class="bet-panel">
 
-    <!-- BET BOX 1 -->
-    <div class="bet-box">
-        <button onclick="changeBet(1,-10)">-</button>
-        <input type="number" id="bet1" value="100">
-        <button onclick="changeBet(1,10)">+</button>
-        BET
-        <input type="number" id="cash1" value="2.00" step="0.1" style="width:60px;">x Auto Cash
-        <span id="result1"></span>
-    </div>
+// Manual Cash Out
+function cashOut(box){
+let bet = activeBets[box];
+if(bet.placed && !bet.cashed){
+bet.cashed = true;
+let win=(bet.amount*multiplier).toFixed(2);
+document.getElementById("result"+box).innerText="Cashed Out at "+multiplier.toFixed(2)+"x = Sh."+win;
+}
+}
 
-    <!-- BET BOX 2 -->
-    <div class="bet-box">
-        <button onclick="changeBet(2,-10)">-</button>
-        <input type="number" id="bet2" value="50">
-        <button onclick="changeBet(2,10)">+</button>
-        BET
-        <input type="number" id="cash2" value="2.00" step="0.1" style="width:60px;">x Auto Cash
-        <span id="result2"></span>
-    </div>
+// Start a round
+function startRound(){
+multiplier=0;
+crashPoint=parseFloat((Math.random()*6+2).toFixed(2));
+document.getElementById("status").innerText="Flying...";
+interval=setInterval(function(){
+multiplier+=0.05;
+multiplier=parseFloat(multiplier.toFixed(2));
+document.getElementById("multiplier").innerText=multiplier+"x";
 
-    <!-- BET BOX 3 -->
-    <div class="bet-box">
-        <button onclick="changeBet(3,-10)">-</button>
-        <input type="number" id="bet3" value="20">
-        <button onclick="changeBet(3,10)">+</button>
-        BET
-        <input type="number" id="cash3" value="2.00" step="0.1" style="width:60px;">x Auto Cash
-        <span id="result3"></span>
-    </div>
+// Check crash for all bets
+for(let box in activeBets){
+let bet=activeBets[box];
+if(bet.placed && !bet.cashed && multiplier>=crashPoint){
+bet.cashed=true;
+document.getElementById("result"+box).innerText="Crashed at "+crashPoint+"x, Lost Sh."+bet.amount;
+}
+}
 
-</div>
+if(multiplier>=crashPoint){
+clearInterval(interval);
+setTimeout(startRound,2000);
+}
+},100);
+}
+
+setTimeout(startRound,2000);
+</script>
+</body>
+</html>
