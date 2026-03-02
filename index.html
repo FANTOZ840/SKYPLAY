@@ -57,21 +57,22 @@ button{padding:6px 10px;border:none;border-radius:5px;background:#ff0000;color:w
 <script>
 // Players
 let playersList = ["Joyce","David","Odhiambo","Daniel","Enkai","Kipkorir","Janet","Edwin","Margaret","Onesmus","Maria","Faith","Dennis","Teresia","Waniru","Muturi"];
-let multiplier=0;
-let crashPoint=0;
+let multiplier = 0;
+let crashPoint = 0;
 let interval;
 let historyList=[];
 
-// Manual user bets
+// Manual bets
 let activeBets = {
 1:{placed:false, amount:100, cashed:false},
 2:{placed:false, amount:50, cashed:false},
 3:{placed:false, amount:20, cashed:false}
 };
 
-// Simulated player bets with random cashout
+// Simulated players
 let simulatedPlayers=[];
 
+// Generate simulated players with random cashout
 function generateSimulatedPlayers(){
     simulatedPlayers=[];
     let html="";
@@ -120,12 +121,13 @@ function startRound(){
     document.getElementById("status").innerText="Flying...";
     generateSimulatedPlayers();
 
+    // Use a faster interval to see changes immediately
     interval=setInterval(function(){
-        multiplier+=0.05;
+        multiplier+=0.1; // faster increment
         multiplier=parseFloat(multiplier.toFixed(2));
         document.getElementById("multiplier").innerText=multiplier+"x";
 
-        // Check simulated players cash out
+        // Simulated players cash out
         simulatedPlayers.forEach((p,i)=>{
             if(!p.cashed && multiplier>=p.cashOut && multiplier<crashPoint){
                 p.cashed=true;
@@ -137,7 +139,7 @@ function startRound(){
             }
         });
 
-        // Check manual bets crash
+        // Manual bets crash
         for(let box in activeBets){
             let bet=activeBets[box];
             if(bet.placed && !bet.cashed && multiplier>=crashPoint){
@@ -153,10 +155,11 @@ function startRound(){
             updateHistory();
             setTimeout(startRound,2000);
         }
-    },100);
+    },80); // smaller interval = smoother
 }
 
-setTimeout(startRound,2000);
+// Start game after small delay
+setTimeout(startRound,500);
 </script>
 </body>
 </html>
