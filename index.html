@@ -2,59 +2,57 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aviator Simulator</title>
+<title>Aviator Multiplayer Simulator</title>
 
 <style>
 body{
     margin:0;
     font-family:Arial, sans-serif;
-    background:#0b0f1a;
     color:white;
+    background:
+        radial-gradient(circle at center, #400000 0%, #000 70%),
+        repeating-radial-gradient(circle, rgba(0,0,0,0.6) 0px, rgba(0,0,0,0.6) 10px, transparent 10px, transparent 20px);
 }
 
-/* Top history bar */
+/* History top */
 .history{
     display:flex;
     overflow-x:auto;
     padding:10px;
-    background:#111827;
+    background:#1a0000;
 }
 .history div{
-    background:#1f2937;
+    background:#330000;
     padding:6px 12px;
     margin-right:6px;
     border-radius:20px;
     font-size:14px;
-    color:#00ffcc;
+    color:#ff4d4d;
 }
 
 /* Game area */
 .game-area{
-    height:55vh;
+    height:40vh;
     display:flex;
     align-items:center;
     justify-content:center;
     flex-direction:column;
-    background: radial-gradient(circle, #111827 0%, #000 80%);
-    position:relative;
 }
 
 #multiplier{
-    font-size:50px;
+    font-size:55px;
     font-weight:bold;
-    color:#00ffcc;
+    color:#ff4d4d;
 }
 
 #status{
-    position:absolute;
-    top:20px;
-    font-size:16px;
-    opacity:0.7;
+    margin-bottom:10px;
+    opacity:0.8;
 }
 
 /* Betting panel */
 .bet-panel{
-    background:#111827;
+    background:#1a0000;
     padding:15px;
 }
 
@@ -65,32 +63,34 @@ body{
     margin-bottom:10px;
 }
 
-.bet-controls button{
-    padding:10px 15px;
-    font-size:18px;
-}
-
 input{
     width:80px;
     text-align:center;
-    font-size:18px;
-}
-
-.cashout{
-    background:#1f2937;
-    padding:10px;
-    margin-top:10px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+    font-size:16px;
 }
 
 button{
+    padding:8px 12px;
     border:none;
-    border-radius:6px;
-    background:#2563eb;
+    border-radius:5px;
+    background:#ff0000;
     color:white;
     cursor:pointer;
+}
+
+/* Player result list */
+.players{
+    margin-top:15px;
+    max-height:200px;
+    overflow-y:auto;
+}
+
+.player{
+    background:#330000;
+    padding:6px;
+    margin-bottom:5px;
+    border-radius:5px;
+    font-size:14px;
 }
 </style>
 </head>
@@ -105,41 +105,69 @@ button{
 </div>
 
 <div class="bet-panel">
+
     <div class="bet-controls">
-        <button onclick="changeBet(-10)">-</button>
-        <input type="number" id="betAmount" value="10">
-        <button onclick="changeBet(10)">+</button>
+        <button onclick="changeBet(-50)">-</button>
+        <input type="number" id="betAmount" value="100">
+        <button onclick="changeBet(50)">+</button>
         <button onclick="placeBet()">BET</button>
     </div>
 
-    <div class="cashout">
-        Auto Cash Out
+    <div>
+        Auto Cash Out:
         <input type="number" id="autoCash" value="2.00" step="0.1">
     </div>
+
+    <div class="players" id="players"></div>
+
 </div>
 
 <script>
+
+let players = [
+"Joyce","Ephantus","John","Mercy","Alex",
+"Loice","Jacinta","Joy","Mwenye","Jackline",
+"David","Daniel","Odhiambo"
+];
+
 let multiplier = 0;
 let crashPoint = 0;
-let interval = null;
+let interval;
 let historyList = [];
-let isBetPlaced = false;
+let playerData = [];
 
 function changeBet(amount){
     let input = document.getElementById("betAmount");
-    input.value = Math.max(10, parseInt(input.value) + amount);
+    input.value = Math.max(50, parseInt(input.value) + amount);
 }
 
 function placeBet(){
-    isBetPlaced = true;
-    alert("Bet placed!");
+    alert("Your bet placed!");
+}
+
+function generatePlayers(){
+    playerData = [];
+    for(let i=0;i<players.length;i++){
+        let betOptions = [100,150,500,1000,200,300];
+        let bet = betOptions[Math.floor(Math.random()*betOptions.length)];
+        let cashOut = parseFloat((Math.random()*4+1.5).toFixed(2));
+        playerData.push({
+            name: players[i],
+            bet: bet,
+            cashOut: cashOut,
+            cashed:false
+        });
+    }
 }
 
 function startRound(){
+    document.getElementById("players").innerHTML="";
+    document.getElementById("status").innerText="Flying...";
 
-    document.getElementById("status").innerText = "Flying...";
     multiplier = 0;
-    crashPoint = parseFloat((Math.random() * 8 + 1.5).toFixed(2));
+    crashPoint = parseFloat((Math.random()*6+2).toFixed(2));
+
+    generatePlayers();
 
     interval = setInterval(function(){
 
@@ -147,27 +175,32 @@ function startRound(){
         multiplier = parseFloat(multiplier.toFixed(2));
         document.getElementById("multiplier").innerText = multiplier + "x";
 
-        let auto = parseFloat(document.getElementById("autoCash").value);
+        for(let i=0;i<playerData.length;i++){
+            let p = playerData[i];
 
-        if(isBetPlaced && multiplier >= auto){
-            alert("Auto Cashed Out at " + multiplier + "x");
-            isBetPlaced = false;
+            if(!p.cashed && multiplier >= p.cashOut && multiplier < crashPoint){
+                p.cashed = true;
+                let win = (p.bet * p.cashOut).toFixed(2);
+
+                let div = document.createElement("div");
+                div.className="player";
+                div.innerText = p.name+" bet "+p.bet+" → Cashed out at "+p.cashOut+"x = Sh."+win;
+                document.getElementById("players").appendChild(div);
+            }
         }
 
         if(multiplier >= crashPoint){
             clearInterval(interval);
-            document.getElementById("status").innerText = "Crashed at " + crashPoint + "x";
+            document.getElementById("status").innerText="Crashed at "+crashPoint+"x";
 
-            historyList.unshift(crashPoint + "x");
-            if(historyList.length > 10) historyList.pop();
-
+            historyList.unshift(crashPoint+"x");
+            if(historyList.length>10) historyList.pop();
             updateHistory();
-            isBetPlaced = false;
 
             setTimeout(function(){
-                document.getElementById("status").innerText = "Connecting to game...";
-                setTimeout(startRound,1500);
-            },2000);
+                document.getElementById("status").innerText="Connecting to game...";
+                setTimeout(startRound,2000);
+            },2500);
         }
 
     },100);
@@ -175,15 +208,16 @@ function startRound(){
 
 function updateHistory(){
     let container = document.getElementById("history");
-    container.innerHTML = "";
-    for(let i=0; i<historyList.length; i++){
-        let div = document.createElement("div");
-        div.innerText = historyList[i];
+    container.innerHTML="";
+    for(let i=0;i<historyList.length;i++){
+        let div=document.createElement("div");
+        div.innerText=historyList[i];
         container.appendChild(div);
     }
 }
 
 setTimeout(startRound,2000);
+
 </script>
 
 </body>
