@@ -1,17 +1,24 @@
-let multiplier = 1.0;
-let isRunning = false;
+let multiplier = 0;
+let crashPoint = 0; // declare here
+let interval = null;
 
-function updateMultiplier() {
-  if (isRunning) {
-    multiplier += 0.1; // Example increment logic
-    document.getElementById('multiplierDisplay').innerText = multiplier.toFixed(2) + 'x';
-    setTimeout(updateMultiplier, 100); // Update every 100ms
-  }
+function startRound() {
+  multiplier = 0;
+  crashPoint = Math.random() * 28 + 2; // regenerate crashPoint here
+  document.getElementById("status").innerText = "Flying...";
+  if(interval) clearInterval(interval);
+  interval = setInterval(function(){
+    multiplier += 0.2 + Math.random() * 0.3;
+    if(multiplier > 30) multiplier = 30;
+    document.getElementById("multiplier").innerText = multiplier.toFixed(2) + "x";
+    if(multiplier >= crashPoint){
+      clearInterval(interval);
+      document.getElementById("status").innerText = "Crashed! Waiting for next round...";
+      setTimeout(function(){
+        startRound();
+      }, 2000);
+    }
+  }, 80);
 }
 
-function startGame() {
-  isRunning = true;
-  updateMultiplier();
-}
-
-// Call startGame() when the game starts
+startRound();
