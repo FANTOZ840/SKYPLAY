@@ -2,8 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Aviator Core</title>
-
+<title>SkyCrash - Bets</title>
 <style>
 body{
   margin:0;
@@ -13,147 +12,141 @@ body{
   text-align:center;
 }
 
-/* HISTORY BAR */
+/* HISTORY TOP */
 #history{
-  background:#550000;
-  padding:10px;
   display:flex;
-  justify-content:center;
+  justify-content:flex-start;
+  overflow-x:auto;
+  padding:10px;
   gap:8px;
+  background:#330000;
 }
-
-/* history items */
 .history-item{
-  padding:6px 10px;
-  border-radius:12px;
+  padding:5px 12px;
+  border-radius:10px;
   font-weight:bold;
   font-size:14px;
+  white-space:nowrap;
 }
 
-/* multiplier */
+/* MULTIPLIER */
 #multiplier{
-  font-size:110px;
-  margin-top:120px;
+  font-size:80px;
+  margin-top:60px;
   color:#ff4d4d;
 }
 
-#status{
-  margin-top:20px;
-  font-size:24px;
+/* BET BUTTONS */
+#controls{
+  margin-top:30px;
 }
+button{
+  padding:12px 20px;
+  font-size:18px;
+  margin:5px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+}
+.bet-btn{ background:#00aa00; color:white; }
+.cash-btn{ background:#ffaa00; color:black; }
 
-/* loader */
-#loader{
-  margin:30px auto;
-  border:6px solid #660000;
-  border-top:6px solid white;
-  border-radius:50%;
-  width:50px;
-  height:50px;
-  animation:spin 1s linear infinite;
-  display:none;
-}
-
-@keyframes spin{
-  0%{transform:rotate(0deg);}
-  100%{transform:rotate(360deg);}
-}
 </style>
 </head>
-
 <body>
 
 <div id="history"></div>
 
 <div id="multiplier">0.00x</div>
 <div id="status">Starting...</div>
-<div id="loader"></div>
+
+<!-- BET BUTTONS -->
+<div id="controls">
+  <button class="bet-btn" onclick="placeBet(100)">BET 100</button>
+  <button class="bet-btn" onclick="placeBet(500)">BET 500</button>
+  <button id="cashBtn" class="cash-btn" onclick="cashOut()" style="display:none;">CASH OUT</button>
+</div>
 
 <script>
-
 let multiplier = 0;
 let crashPoint = 0;
 let interval;
 let historyList = [];
+let currentBet = 0;
+let cashedOut = false;
 
+// UPDATE HISTORY
 function updateHistory(value){
-
   historyList.unshift(value);
-
-  // keep only 10 items
-  if(historyList.length > 10){
-    historyList.pop();
-  }
-
-  const historyDiv = document.getElementById("history");
-  historyDiv.innerHTML = "";
-
-  historyList.forEach(num => {
-
-    const item = document.createElement("div");
+  if(historyList.length>10) historyList.pop();
+  const historyDiv=document.getElementById("history");
+  historyDiv.innerHTML="";
+  historyList.forEach(num=>{
+    const item=document.createElement("div");
     item.classList.add("history-item");
-
-    if(num < 2){
-      item.style.background = "#cc0000";
-    }
-    else if(num < 10){
-      item.style.background = "#ff9900";
-    }
-    else{
-      item.style.background = "#00cc66";
-    }
-
-    item.innerText = num.toFixed(2) + "x";
+    if(num<2) item.style.background="#cc0000";
+    else if(num<10) item.style.background="#ff9900";
+    else item.style.background="#00cc66";
+    item.innerText=num.toFixed(2)+"x";
     historyDiv.appendChild(item);
-
   });
 }
 
+// PLACE BET
+function placeBet(amount){
+  currentBet = amount;
+  cashedOut=false;
+  document.getElementById("cashBtn").style.display="inline-block";
+  document.getElementById("status").innerText="Bet placed: "+amount;
+}
+
+// CASH OUT
+function cashOut(){
+  if(currentBet>0 && !cashedOut){
+    cashedOut=true;
+    let win = currentBet*multiplier;
+    document.getElementById("status").innerText="You won: "+win.toFixed(2);
+    document.getElementById("cashBtn").style.display="none";
+    currentBet=0;
+  }
+}
+
+// START ROUND
 function startRound(){
-
-  multiplier = 0;
-  crashPoint = Math.random() * 28 + 2;
-
-  document.getElementById("status").innerText = "Flying...";
-  document.getElementById("loader").style.display = "none";
-  document.getElementById("multiplier").style.color = "#ff4d4d";
+  multiplier=0;
+  crashPoint=Math.random()*28+2;
+  currentBet=0;
+  cashedOut=false;
+  document.getElementById("cashBtn").style.display="none";
+  document.getElementById("status").innerText="Flying...";
 
   clearInterval(interval);
 
-  interval = setInterval(() => {
+  interval=setInterval(()=>{
+    multiplier+=0.2+Math.random()*0.3;
+    if(multiplier>30) multiplier=30;
+    document.getElementById("multiplier").innerText=multiplier.toFixed(2)+"x";
 
-    multiplier += 0.15 + Math.random()*0.25;
-
-    document.getElementById("multiplier").innerText =
-      multiplier.toFixed(2) + "x";
-
-    if(multiplier >= crashPoint){
-
+    if(multiplier>=crashPoint){
       clearInterval(interval);
-
-      document.getElementById("multiplier").innerText =
-        crashPoint.toFixed(2) + "x";
-
-      document.getElementById("multiplier").style.color = "white";
-
-      document.getElementById("status").innerText = "CRASHED";
-
+      document.getElementById("multiplier").innerText=crashPoint.toFixed(2)+"x";
+      if(currentBet>0 && !cashedOut){
+        document.getElementById("status").innerText="You Lost!";
+      } else{
+        document.getElementById("status").innerText="CRASHED";
+      }
       updateHistory(crashPoint);
 
-      document.getElementById("loader").style.display = "block";
-
-      setTimeout(() => {
-        document.getElementById("status").innerText =
-          "Waiting for next round...";
-        setTimeout(startRound, 2000);
-      },1000);
+      setTimeout(()=>{
+        document.getElementById("status").innerText="Waiting for next round...";
+        setTimeout(startRound,2000);
+      },1500);
     }
 
   },80);
 }
 
 startRound();
-
 </script>
 
 </body>
