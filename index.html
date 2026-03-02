@@ -3,143 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SkyCrashPlay - Working Multiplier</title>
+<title>SkyCrashPlay - Simple Flying</title>
 <style>
-body { margin:0; padding:20px; font-family:Arial; background:#330000; color:white; display:flex; flex-direction:column; }
-header { text-align:center; font-size:36px; color:#ff4d4d; margin-bottom:20px; }
-#multiplier { font-size:50px; color:#ff3333; text-align:center; margin-bottom:10px; }
-#status { text-align:center; margin-bottom:20px; font-size:18px; }
-.history { display:flex; overflow-x:auto; padding:10px; background:#220000; margin-bottom:10px; }
-.history div { background:#550000; padding:6px 12px; margin-right:6px; border-radius:20px; font-size:16px; color:#ff6666; flex-shrink:0; }
-.players { max-width:700px; margin:0 auto; flex:1; }
-.player { background:#440000; padding:10px; margin-bottom:6px; border-radius:8px; font-size:18px; display:flex; justify-content:space-between; align-items:center; }
-button { background:#ff4d4d; color:white; border:none; padding:4px 10px; margin-left:4px; border-radius:4px; cursor:pointer; font-weight:bold; }
-input[type=number] { width:60px; text-align:center; border-radius:4px; border:none; padding:4px; }
+body { margin:0; padding:20px; font-family:Arial; background:#330000; color:white; text-align:center; }
+#multiplier { font-size:60px; color:#ff3333; margin-top:100px; }
+#status { font-size:24px; margin-top:20px; color:#ff6666; }
 </style>
 </head>
 <body>
 
-<header>SkyCrashPlay</header>
-
-<div class="history" id="history"></div>
-<div id="status">Flying...</div>
 <div id="multiplier">0.00x</div>
-
-<div style="text-align:center; margin-bottom:15px;">
-  Bet: Sh.<input type="number" id="myBet" value="100" min="10" step="10">
-  <button onclick="changeBet(10)">+10</button>
-  <button onclick="changeBet(-10)">-10</button>
-  <button onclick="cashOutMyBet()">CASH OUT</button>
-  <span id="myResult"></span>
-</div>
-
-<div class="players" id="players"></div>
+<div id="status">Flying...</div>
 
 <script>
-// --- Players ---
-const playersList=["John","Jane","Odhiambo","Kelvin","Janet","Wairimu","Joyce","Faith","Njeri","Kanja","Douglas"];
-let simulatedPlayers=[];
-
-// --- History ---
-let historyList=[];
-
-// --- Multiplier ---
 let multiplier = 0;
-let crashPoint = 0;
+let crashPoint = Math.random()*28+2; // random crash between 2-30
 let interval = null;
-let myCashed = false;
 
-// --- Generate players ---
-function generatePlayers(){
-  simulatedPlayers=[];
-  let html="";
-  for(let i=0; i<playersList.length; i++){
-    let betAmount=[50,100,150,200][Math.floor(Math.random()*4)];
-    let cashOut=parseFloat((Math.random()*6+1.5).toFixed(2));
-    simulatedPlayers.push({name:playersList[i], bet:betAmount, cashOut:cashOut, cashed:false});
-    html+=<div class="player" id="player${i}">${playersList[i]} - Bet Sh.${betAmount} - Cash Out: ${cashOut}x</div>;
-  }
-  document.getElementById("players").innerHTML=html;
+function startRound() {
+    multiplier = 0;
+    document.getElementById("status").innerText = "Flying...";
+    if(interval) clearInterval(interval);
+    
+    interval = setInterval(function(){
+        multiplier += 0.2 + Math.random()*0.3; // visible movement
+        if(multiplier > 30) multiplier = 30;
+        document.getElementById("multiplier").innerText = multiplier.toFixed(2) + "x";
+        
+        if(multiplier >= crashPoint){
+            clearInterval(interval);
+            document.getElementById("status").innerText = "Crashed! Waiting for next round...";
+            setTimeout(function(){
+                crashPoint = Math.random()*28+2;
+                startRound();
+            }, 2000); // 2 seconds wait
+        }
+    }, 80);
 }
 
-// --- Update history ---
-function updateHistory(){
-  const container=document.getElementById("history");
-  container.innerHTML="";
-  let currentDiv=document.createElement("div");
-  currentDiv.innerText=multiplier.toFixed(2)+"x";
-  container.appendChild(currentDiv);
-  for(let i=0;i<historyList.length;i++){
-    let div=document.createElement("div");
-    div.innerText=historyList[i]+"x";
-    container.appendChild(div);
-  }
-}
-
-// --- Start round ---
-function startRound(){
-  multiplier = 0;
-  myCashed = false;
-  document.getElementById("myResult").innerText="";
-  crashPoint = parseFloat((Math.random()*28+2).toFixed(2)); // random crash 2-30
-  generatePlayers();
-  if(interval) clearInterval(interval);
-
-  interval = setInterval(function(){
-    multiplier += 0.2 + Math.random()*0.3; // visible random increase
-    if(multiplier>30) multiplier=30;
-    multiplier = parseFloat(multiplier.toFixed(2));
-    document.getElementById("multiplier").innerText = multiplier.toFixed(2)+"x";
-    updateHistory();
-
-    // Players auto cash out
-    simulatedPlayers.forEach((p,i)=>{
-      if(!p.cashed && multiplier>=p.cashOut && multiplier<crashPoint){
-        p.cashed=true;
-        document.getElementById("player"+i).innerText=${p.name} - Bet Sh.${p.bet} - Cashed Out ${p.cashOut}x = Sh.${(p.bet*p.cashOut).toFixed(2)};
-      }
-      if(!p.cashed && multiplier>=crashPoint){
-        p.cashed=true;
-        document.getElementById("player"+i).innerText=${p.name} - Bet Sh.${p.bet} - Crashed at ${crashPoint}x, Lost Sh.${p.bet};
-      }
-    });
-
-    // Manual bet crash
-    if(!myCashed && multiplier>=crashPoint){
-      myCashed = true;
-      let bet = parseInt(document.getElementById("myBet").value);
-      document.getElementById("myResult").innerText=CRASHED! Lost Sh.${bet} at ${crashPoint.toFixed(2)}x;
-    }
-
-    // End round
-    if(multiplier>=crashPoint){
-      clearInterval(interval);
-      historyList.unshift(crashPoint.toFixed(2));
-      if(historyList.length>10) historyList.pop();
-      setTimeout(startRound,2000);
-    }
-
-  }, 80);
-}
-
-// --- Manual bet functions ---
-function changeBet(amount){
-  let input = document.getElementById("myBet");
-  let val = parseInt(input.value) + amount;
-  if(val<10) val=10;
-  input.value = val;
-}
-function cashOutMyBet(){
-  if(!myCashed){
-    myCashed = true;
-    let bet = parseInt(document.getElementById("myBet").value);
-    let cash = (bet*multiplier).toFixed(2);
-    document.getElementById("myResult").innerText=CASHED OUT: Sh.${cash} at ${multiplier.toFixed(2)}x;
-  }
-}
-
-// --- Start ---
-generatePlayers();
+// Start the first round
 startRound();
 </script>
 
