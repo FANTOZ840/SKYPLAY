@@ -1,4 +1,4 @@
-let activeBets = {
+[3:36 am, 02/03/2026] FANTOZ🤫🌚: let activeBets = {
     1: {placed:false, amount:100},
     2: {placed:false, amount:50},
     3: {placed:false, amount:20}
@@ -15,3 +15,36 @@ function placeBet(box){
     activeBets[box].amount = amount;
     document.getElementById("result"+box).innerText = " Bet placed: Sh."+amount;
 }
+[3:41 am, 02/03/2026] FANTOZ🤫🌚: <div class="bet-panel">
+
+    <!-- BET BOX 1 -->
+    <div class="bet-box">
+        <button onclick="changeBet(1,-10)">-</button>
+        <input type="number" id="bet1" value="100">
+        <button onclick="changeBet(1,10)">+</button>
+        BET
+        <input type="number" id="cash1" value="2.00" step="0.1" style="width:60px;">x Auto Cash
+        <span id="result1"></span>
+    </div>
+
+    <!-- BET BOX 2 -->
+    <div class="bet-box">
+        <button onclick="changeBet(2,-10)">-</button>
+        <input type="number" id="bet2" value="50">
+        <button onclick="changeBet(2,10)">+</button>
+        BET
+        <input type="number" id="cash2" value="2.00" step="0.1" style="width:60px;">x Auto Cash
+        <span id="result2"></span>
+    </div>
+
+    <!-- BET BOX 3 -->
+    <div class="bet-box">
+        <button onclick="changeBet(3,-10)">-</button>
+        <input type="number" id="bet3" value="20">
+        <button onclick="changeBet(3,10)">+</button>
+        BET
+        <input type="number" id="cash3" value="2.00" step="0.1" style="width:60px;">x Auto Cash
+        <span id="result3"></span>
+    </div>
+
+</div>
