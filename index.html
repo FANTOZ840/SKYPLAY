@@ -1,47 +1,160 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SkyCrashPlay</title>
-  <style>
-    body { margin:0; padding:20px; font-family:Arial; background:#000; color:white; text-align:center; }
-    #multiplier { font-size:60px; color:#ff0000; margin-top:20px; }
-    #status { font-size:24px; margin-top:10px; color:#ff6666; }
-    #cashOutBtn { margin-top:20px; padding:10px 20px; font-size:18px; background:#44cc44; border:none; color:white; cursor:pointer; border-radius:5px; }
-    #cashOutBtn:disabled { background:#666; cursor:not-allowed; }
-    #history { margin-top:20px; color:#aaa; font-size:16px; }
-  </style>
+<meta charset="UTF-8">
+<title>Aviator Core</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#8b0000;
+  color:white;
+  text-align:center;
+}
+
+/* HISTORY BAR */
+#history{
+  background:#550000;
+  padding:10px;
+  display:flex;
+  justify-content:center;
+  gap:8px;
+}
+
+/* history items */
+.history-item{
+  padding:6px 10px;
+  border-radius:12px;
+  font-weight:bold;
+  font-size:14px;
+}
+
+/* multiplier */
+#multiplier{
+  font-size:110px;
+  margin-top:120px;
+  color:#ff4d4d;
+}
+
+#status{
+  margin-top:20px;
+  font-size:24px;
+}
+
+/* loader */
+#loader{
+  margin:30px auto;
+  border:6px solid #660000;
+  border-top:6px solid white;
+  border-radius:50%;
+  width:50px;
+  height:50px;
+  animation:spin 1s linear infinite;
+  display:none;
+}
+
+@keyframes spin{
+  0%{transform:rotate(0deg);}
+  100%{transform:rotate(360deg);}
+}
+</style>
 </head>
+
 <body>
-  <div id="multiplier">0.00x</div>
-  <div id="status">Flying...</div>
-  <button id="cashOutBtn" onclick="cashOut()">Cash Out</button>
-  <div id="history"></div>
 
-  <script>
-    let multiplier = 0;
-    let crashPoint = 0;
-    let interval = null;
-    let cashedOut = false;
-    let history = [];
+<div id="history"></div>
 
-    function updateDisplay() {
-      document.getElementById("multiplier").innerText = multiplier.toFixed(2) + "x";
+<div id="multiplier">0.00x</div>
+<div id="status">Starting...</div>
+<div id="loader"></div>
+
+<script>
+
+let multiplier = 0;
+let crashPoint = 0;
+let interval;
+let historyList = [];
+
+function updateHistory(value){
+
+  historyList.unshift(value);
+
+  // keep only 10 items
+  if(historyList.length > 10){
+    historyList.pop();
+  }
+
+  const historyDiv = document.getElementById("history");
+  historyDiv.innerHTML = "";
+
+  historyList.forEach(num => {
+
+    const item = document.createElement("div");
+    item.classList.add("history-item");
+
+    if(num < 2){
+      item.style.background = "#cc0000";
+    }
+    else if(num < 10){
+      item.style.background = "#ff9900";
+    }
+    else{
+      item.style.background = "#00cc66";
     }
 
-    function updateHistory() {
-      let hist = history.map(h => `<span style="color:${h.cashedOut ? '                                                                   
-      document.getElementById("history").innerHTML = hist;
+    item.innerText = num.toFixed(2) + "x";
+    historyDiv.appendChild(item);
+
+  });
+}
+
+function startRound(){
+
+  multiplier = 0;
+  crashPoint = Math.random() * 28 + 2;
+
+  document.getElementById("status").innerText = "Flying...";
+  document.getElementById("loader").style.display = "none";
+  document.getElementById("multiplier").style.color = "#ff4d4d";
+
+  clearInterval(interval);
+
+  interval = setInterval(() => {
+
+    multiplier += 0.15 + Math.random()*0.25;
+
+    document.getElementById("multiplier").innerText =
+      multiplier.toFixed(2) + "x";
+
+    if(multiplier >= crashPoint){
+
+      clearInterval(interval);
+
+      document.getElementById("multiplier").innerText =
+        crashPoint.toFixed(2) + "x";
+
+      document.getElementById("multiplier").style.color = "white";
+
+      document.getElementById("status").innerText = "CRASHED";
+
+      updateHistory(crashPoint);
+
+      document.getElementById("loader").style.display = "block";
+
+      setTimeout(() => {
+        document.getElementById("status").innerText =
+          "Waiting for next round...";
+        setTimeout(startRound, 2000);
+      },1000);
     }
 
-    function startRound() {
-      multiplier = 0;
-      crashPoint = Math.random() * 28 + 2;
-      cashedOut = false;
-      updateDisplay();
-      document.getElementById("status").innerText = "Flying...";
-      document.getElementById("cashOutBtn").disabled = false;
-      if(interval) clearInterval(interval);
-      interval = setInterval(function(){
-        multiplier += 0.2 + Math.random()
+  },80);
+}
+
+startRound();
+
+</script>
+
+</body>
+</html>
