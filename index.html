@@ -3,55 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SkyCrashPlay - Simple Flying</title>
+  <title>SkyCrashPlay</title>
   <style>
-    body { margin:0; padding:20px; font-family:Arial; background:#330000; color:white; text-align:center; }
-    #multiplier { font-size:60px; color:#ff3333; margin-top:100px; }
-    #status { font-size:24px; margin-top:20px; color:#ff6666; }
-    #cashOutBtn { margin-top:20px; padding:10px 20px; font-size:18px; background:#44cc44; border:none; color:white; cursor:pointer; }
+    body { margin:0; padding:20px; font-family:Arial; background:#000; color:white; text-align:center; }
+    #multiplier { font-size:60px; color:#ff0000; margin-top:20px; }
+    #status { font-size:24px; margin-top:10px; color:#ff6666; }
+    #cashOutBtn { margin-top:20px; padding:10px 20px; font-size:18px; background:#44cc44; border:none; color:white; cursor:pointer; border-radius:5px; }
     #cashOutBtn:disabled { background:#666; cursor:not-allowed; }
+    #history { margin-top:20px; color:#aaa; font-size:16px; }
   </style>
 </head>
 <body>
   <div id="multiplier">0.00x</div>
   <div id="status">Flying...</div>
   <button id="cashOutBtn" onclick="cashOut()">Cash Out</button>
+  <div id="history"></div>
 
   <script>
     let multiplier = 0;
     let crashPoint = 0;
     let interval = null;
     let cashedOut = false;
+    let history = [];
+
+    function updateDisplay() {
+      document.getElementById("multiplier").innerText = multiplier.toFixed(2) + "x";
+    }
+
+    function updateHistory() {
+      let hist = history.map(h => `<span style="color:${h.cashedOut ? '                                                                   
+      document.getElementById("history").innerHTML = hist;
+    }
 
     function startRound() {
       multiplier = 0;
       crashPoint = Math.random() * 28 + 2;
       cashedOut = false;
+      updateDisplay();
       document.getElementById("status").innerText = "Flying...";
       document.getElementById("cashOutBtn").disabled = false;
       if(interval) clearInterval(interval);
       interval = setInterval(function(){
-        multiplier += 0.2 + Math.random() * 0.3;
-        if(multiplier > 30) multiplier = 30;
-        document.getElementById("multiplier").innerText = multiplier.toFixed(2) + "x";
-        if(multiplier >= crashPoint && !cashedOut){
-          clearInterval(interval);
-          document.getElementById("status").innerText = "Crashed! Waiting for next round...";
-          document.getElementById("cashOutBtn").disabled = true;
-          setTimeout(startRound, 2000);
-        }
-      }, 80);
-    }
-
-    function cashOut() {
-      cashedOut = true;
-      clearInterval(interval);
-      document.getElementById("status").innerText = Cashed out at ${multiplier.toFixed(2)}x!;
-      document.getElementById("cashOutBtn").disabled = true;
-      setTimeout(startRound, 2000);
-    }
-
-    startRound();
-  </script>
-</body>
-</html>
+        multiplier += 0.2 + Math.random()
