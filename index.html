@@ -2,90 +2,55 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SkyCrashPlay</title>
+<title>SkyCrashPlay Test</title>
 <style>
-body{margin:0;font-family:Arial;color:white;background:radial-gradient(circle at center,#400000 0%,#000 70%),repeating-radial-gradient(circle,rgba(0,0,0,0.6)0,rgba(0,0,0,0.6)10px,transparent 10px,transparent 20px);}
-header{text-align:center;font-size:32px;font-weight:bold;color:#ff4d4d;padding:15px;}
-.history{display:flex;overflow-x:auto;padding:10px;background:#1a0000;margin-bottom:10px;}
-.history div{background:#330000;padding:6px 12px;margin-right:6px;border-radius:20px;font-size:14px;color:#ff4d4d;}
-.game-area{height:30vh;display:flex;align-items:center;justify-content:center;flex-direction:column;margin-bottom:10px;}
-#multiplier{font-size:55px;font-weight:bold;color:#ff4d4d;}
-#status{margin-bottom:10px;opacity:0.8;}
-.players{max-height:300px;overflow-y:auto;padding:0 15px;margin-bottom:15px;}
-.player{background:#330000;padding:6px;margin-bottom:5px;border-radius:5px;font-size:14px;display:flex;justify-content:space-between;}
-.bet-panel{background:#1a0000;padding:15px;}
-.bet-box{margin-bottom:10px;}
-.bet-box input{width:60px;text-align:center;font-size:16px;margin-right:5px;}
-button{padding:6px 10px;border:none;border-radius:5px;background:#ff0000;color:white;cursor:pointer;margin-right:5px;}
+body{background:black;color:white;font-family:Arial;text-align:center;padding:20px;}
+#multiplier{font-size:50px;color:red;margin:20px;}
+#status{margin-bottom:20px;}
+#history{display:flex;justify-content:center;gap:10px;margin-bottom:20px;}
+#history div{background:#222;padding:5px 10px;border-radius:5px;}
 </style>
 </head>
 <body>
 
-<header>SkyCrashPlay</header>
-
-<div class="history" id="history"></div>
-
-<div class="game-area">
-<div id="status">Connecting to game...</div>
+<h1>SkyCrashPlay Test</h1>
+<div id="status">Connecting...</div>
 <div id="multiplier">0.00x</div>
-</div>
+<div id="history"></div>
 
-<div class="players" id="players"></div>
-
-<div class="bet-panel">
-<div class="bet-box">
+<div>
 <input type="number" id="bet1" value="100">
 <button onclick="placeBet(1)">BET</button>
 <button onclick="cashOut(1)">CASH OUT</button>
 <span id="result1"></span>
 </div>
-<div class="bet-box">
-<input type="number" id="bet2" value="50">
-<button onclick="placeBet(2)">BET</button>
-<button onclick="cashOut(2)">CASH OUT</button>
-<span id="result2"></span>
-</div>
-<div class="bet-box">
-<input type="number" id="bet3" value="20">
-<button onclick="placeBet(3)">BET</button>
-<button onclick="cashOut(3)">CASH OUT</button>
-<span id="result3"></span>
-</div>
-</div>
 
 <script>
-// Players
-let playersList = ["Joyce","David","Odhiambo","Daniel","Enkai","Kipkorir","Janet","Edwin","Margaret","Onesmus","Maria","Faith","Dennis","Teresia","Waniru","Muturi"];
+// Variables
 let multiplier = 0;
 let crashPoint = 0;
 let interval;
-let historyList=[];
+let historyList = [];
+let activeBets = {1:{placed:false,amount:100,cashed:false}};
 
-// Manual bets
-let activeBets = {
-1:{placed:false, amount:100, cashed:false},
-2:{placed:false, amount:50, cashed:false},
-3:{placed:false, amount:20, cashed:false}
-};
-
-// Simulated players
-let simulatedPlayers=[];
-
-// Generate simulated players with random cashout
-function generateSimulatedPlayers(){
-    simulatedPlayers=[];
-    let html="";
-    for(let i=0;i<playersList.length;i++){
-        let betAmount = [50,100,150,200,500][Math.floor(Math.random()*5)];
-        let cashOut = parseFloat((Math.random()*6+1.5).toFixed(2));
-        simulatedPlayers.push({name:playersList[i],bet:betAmount,cashOut:cashOut,cashed:false});
-        html+=<div class="player" id="player${i}">${playersList[i]} - Bet Sh.${betAmount} - Cash Out: ${cashOut}x</div>;
-    }
-    document.getElementById("players").innerHTML=html;
+// Functions
+function placeBet(box){
+    let amt = parseInt(document.getElementById("bet"+box).value);
+    activeBets[box].placed=true;
+    activeBets[box].amount=amt;
+    activeBets[box].cashed=false;
+    document.getElementById("result"+box).innerText="Bet placed: Sh."+amt;
 }
 
-// Update history
+function cashOut(box){
+    let bet = activeBets[box];
+    if(bet.placed && !bet.cashed){
+        bet.cashed=true;
+        let win=(bet.amount*multiplier).toFixed(2);
+        document.getElementById("result"+box).innerText="Cashed Out at "+multiplier.toFixed(2)+"x = Sh."+win;
+    }
+}
+
 function updateHistory(){
     let container=document.getElementById("history");
     container.innerHTML="";
@@ -96,70 +61,33 @@ function updateHistory(){
     }
 }
 
-// Manual bets
-function placeBet(box){
-    let amount=parseInt(document.getElementById("bet"+box).value);
-    activeBets[box].placed=true;
-    activeBets[box].amount=amount;
-    activeBets[box].cashed=false;
-    document.getElementById("result"+box).innerText="Bet placed: Sh."+amount;
-}
-
-function cashOut(box){
-    let bet=activeBets[box];
-    if(bet.placed && !bet.cashed){
-        bet.cashed=true;
-        let win=(bet.amount*multiplier).toFixed(2);
-        document.getElementById("result"+box).innerText="Cashed Out at "+multiplier.toFixed(2)+"x = Sh."+win;
-    }
-}
-
-// Start a round
 function startRound(){
     multiplier=0;
-    crashPoint=parseFloat((Math.random()*10+2).toFixed(2));
+    crashPoint=parseFloat((Math.random()*5+2).toFixed(2));
     document.getElementById("status").innerText="Flying...";
-    generateSimulatedPlayers();
-
-    // Use a faster interval to see changes immediately
     interval=setInterval(function(){
-        multiplier+=0.1; // faster increment
+        multiplier+=0.1;
         multiplier=parseFloat(multiplier.toFixed(2));
         document.getElementById("multiplier").innerText=multiplier+"x";
 
-        // Simulated players cash out
-        simulatedPlayers.forEach((p,i)=>{
-            if(!p.cashed && multiplier>=p.cashOut && multiplier<crashPoint){
-                p.cashed=true;
-                document.getElementById("player"+i).innerText = p.name+" - Bet Sh."+p.bet+" - Cashed Out at "+p.cashOut+"x = Sh."+(p.bet*p.cashOut).toFixed(2);
-            }
-            if(!p.cashed && multiplier>=crashPoint){
-                p.cashed=true;
-                document.getElementById("player"+i).innerText = p.name+" - Bet Sh."+p.bet+" - Crashed at "+crashPoint+"x, Lost Sh."+p.bet;
-            }
-        });
-
-        // Manual bets crash
-        for(let box in activeBets){
-            let bet=activeBets[box];
-            if(bet.placed && !bet.cashed && multiplier>=crashPoint){
-                bet.cashed=true;
-                document.getElementById("result"+box).innerText="Crashed at "+crashPoint+"x, Lost Sh."+bet.amount;
-            }
+        if(activeBets[1].placed && !activeBets[1].cashed && multiplier>=crashPoint){
+            activeBets[1].cashed=true;
+            document.getElementById("result1").innerText="Crashed at "+crashPoint+"x, Lost Sh."+activeBets[1].amount;
         }
 
         if(multiplier>=crashPoint){
             clearInterval(interval);
             historyList.unshift(crashPoint.toFixed(2));
-            if(historyList.length>10) historyList.pop();
+            if(historyList.length>5) historyList.pop();
             updateHistory();
             setTimeout(startRound,2000);
         }
-    },80); // smaller interval = smoother
+    },100);
 }
 
-// Start game after small delay
+// Start game
 setTimeout(startRound,500);
 </script>
+
 </body>
 </html>
